@@ -9,15 +9,8 @@ app.use(cors());
 app.use(express.json());
 
 const Note = require("./models/Note.js");
-
-let notes = [];
-
-const generateId = () => {
-  const notesIds = notes.map((n) => n.id);
-  const maxId = notesIds.length ? Math.max(...notesIds) : 0;
-  const newId = maxId + 1;
-  return newId;
-};
+const notFound = require("./middleware/notFound");
+const handleErrors = require("./middleware/handleErrors");
 
 app.get("/", (request, response) => {
   response.send("<h1>Hello World!</h1>");
@@ -29,20 +22,46 @@ app.get("/api/notes", (request, response) => {
   });
 });
 
-app.get("/api/notes/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const note = notes.find((note) => note.id === id);
+app.get("/api/notes/:id", (request, response, next) => {
+  const id = request.params.id;
 
-  if (note) {
-    return response.json(note);
-  } else {
-    response.status(404).end();
-  }
+  Note.findById(id)
+    .then((note) => {
+      if (note) {
+        return response.json(note);
+      } else {
+        response.status(404).end();
+      }
+    })
+    .catch((error) => {
+      next(error);
+    });
 });
 
-app.delete("/api/notes/:id", (request, response) => {
-  const id = Number(request.params.id);
-  notes = notes.filter((note) => note.id !== id);
+app.put("/api/notes/:id", (request, response, next) => {
+  const id = request.params.id;
+  const note = request.body;
+
+  const newNoteInfo = {
+    content: note.content,
+    important: note.important,
+  };
+
+  Note.findByIdAndUpdate(id, newNoteInfo, {new: true}).then((result) => {
+    response.json(result);
+  });
+});
+
+app.delete("/api/notes/:id", (request, response, next) => {
+  const id = request.params.id;
+
+  Note.findByIdAndRemove(id)
+    .then((result) => {
+      response.status(204).end();
+    })
+    .catch((error) => {
+      next(error);
+    });
 
   response.status(204).end();
 });
@@ -66,6 +85,9 @@ app.post("/api/notes", (request, response) => {
     response.json(saveNote);
   });
 });
+
+app.use(notFound);
+app.use(handleErrors);
 
 const PORT = process.env.PORT;
 
