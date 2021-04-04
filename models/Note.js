@@ -18,28 +18,3 @@ noteSchema.set("toJSON", {
 const Note = model("Note", noteSchema);
 
 module.exports = Note;
-
-// Note.find({})
-//   .then((result) => {
-//     console.log(result);
-//     mongoose.connection.close();
-//   })
-//   .catch((error) => {
-//     console.error(error);
-//   });
-
-// const note = new Note({
-//   content: "MongoDB is incredible , william_ws7",
-//   date: new Date(),
-//   important: true,
-// });
-
-// note
-//   .save()
-//   .then((result) => {
-//     console.log(result);
-//     mongoose.connection.close();
-//   })
-//   .catch((error) => {
-//     console.error(error);
-//   });
