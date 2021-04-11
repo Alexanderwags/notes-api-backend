@@ -21,4 +21,5 @@ mongoose
   })
   .catch((error) => {
     console.error(error);
+    mongoose.disconnect();
   });
